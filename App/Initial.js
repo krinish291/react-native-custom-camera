@@ -1,36 +1,21 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {View, StyleSheet} from 'react-native';
+import {CameraButton} from './CameraButton';
 
 const styles = StyleSheet.create({
-  buttonStyle: {
-    backgroundColor: '#FA6650',
-    alignItems: 'center',
-    marginHorizontal: 20,
-    borderRadius: 3,
-  },
   outer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  textStyle: {
-    padding: 10,
-    color: '#fff',
-  },
 });
 
 const Home = () => {
-  const navigation = useNavigation();
-  const {buttonStyle, outer, textStyle} = styles;
+  const {outer} = styles;
 
   return (
     <View style={outer}>
-      <TouchableOpacity
-        style={buttonStyle}
-        onPress={() => navigation.navigate('Camera')}>
-        <Text style={textStyle}>Go to Camera</Text>
-      </TouchableOpacity>
+      <CameraButton />
     </View>
   );
 };

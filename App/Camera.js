@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import {RNCamera} from 'react-native-camera';
 import {useCamera} from 'react-native-camera-hooks';
 import CameraRoll from '@react-native-community/cameraroll';
@@ -26,6 +27,9 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
+  marginHZ: {
+    marginHorizontal: 50,
+  },
   container: {
     position: 'absolute',
     left: 0,
@@ -42,44 +46,70 @@ const styles = StyleSheet.create({
   },
   rowStyle: {
     flexDirection: 'row',
+    zIndex: 20,
   },
   imageStyle: {
     width: 90,
     height: 90,
   },
   circleIconOuter: {
+    zIndex: 20,
     marginBottom: 30,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   circleIcon: {
     fontSize: 85,
     color: '#fff',
   },
+  flashIcon: {
+    fontSize: 30,
+    color: '#fff',
+  },
+  repeatIcon: {
+    fontSize: 30,
+    color: '#fff',
+  },
   swipeView: {
     position: 'absolute',
-    height: height,
+    height: height / 1.5,
     width: width,
     top: 0,
+    zIndex: 10,
+  },
+  closeStyle: {
+    position: 'absolute',
+    top: 50,
+    left: 50,
+    zIndex: 20,
   },
 });
 
 const Camera = () => {
   const [{cameraRef}, {takePicture}] = useCamera(null);
   const [nodes, setNodes] = useState([]);
+  const navigation = useNavigation();
   const [gallery, setGallery] = useState(false);
+  const [isFlash, setIsFlash] = useState(false);
   const [endCursor, setEndCursor] = useState(0);
+  const [isFront, setIsFront] = useState(false);
   let touchY = '';
   let touchX = '';
   const {
     preview,
     flex,
     container,
+    closeStyle,
     centerItem,
     upIconStyle,
     rowStyle,
     imageStyle,
     circleIcon,
+    flashIcon,
+    repeatIcon,
     circleIconOuter,
     swipeView,
+    marginHZ,
   } = styles;
 
   const captureHandler = async () => {
@@ -169,8 +199,8 @@ const Camera = () => {
     <View style={flex}>
       <RNCamera
         ref={cameraRef}
-        // type={RNCamera.Constants.Type.back}
-        // flashMode={RNCamera.Constants.FlashMode.on}
+        type={RNCamera.Constants.Type[isFront ? 'front' : 'back']}
+        flashMode={RNCamera.Constants.FlashMode[isFlash ? 'on' : 'off']}
         style={preview}>
         <View
           onTouchStart={e => {
@@ -180,6 +210,13 @@ const Camera = () => {
           onTouchEnd={onTouchEnd}
           style={swipeView}
         />
+        <TouchableOpacity
+          style={closeStyle}
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <Feather name="x" style={repeatIcon} />
+        </TouchableOpacity>
         <View style={container}>
           {(nodes?.length && (
             <TouchableOpacity
@@ -195,16 +232,34 @@ const Camera = () => {
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={rowStyle}>
               {nodes?.map((e, i) => (
-                <TouchableOpacity key={i}>
+                <TouchableOpacity
+                  key={i}
+                  onPress={() => {
+                    console.log(e);
+                  }}>
                   <Image source={{uri: e.image.uri}} style={imageStyle} />
                 </TouchableOpacity>
               ))}
             </View>
           </ScrollView>
         </View>
-        <TouchableOpacity style={circleIconOuter} onPress={captureHandler}>
-          <Feather name="circle" style={circleIcon} />
-        </TouchableOpacity>
+        <View style={circleIconOuter}>
+          <TouchableOpacity
+            onPress={() => {
+              setIsFlash(!isFlash);
+            }}>
+            <Feather name={(isFlash && 'zap') || 'zap-off'} style={flashIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={captureHandler} style={marginHZ}>
+            <Feather name="circle" style={circleIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setIsFront(!isFront);
+            }}>
+            <Feather name="repeat" style={repeatIcon} />
+          </TouchableOpacity>
+        </View>
       </RNCamera>
       <Modal visible={gallery} transparent={true}>
         {renderModal()}
